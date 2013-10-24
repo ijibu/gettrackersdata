@@ -9,12 +9,15 @@ import (
 	"net/url"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
 const (
 	UA = "Golang Downloader from Ijibu.com"
 )
+
+var j int = 0
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) //设置cpu的核的数量，从而实现高并发
@@ -49,19 +52,27 @@ func getShangTickerTables(c chan bool, n int, code string) {
 	req.Method = "GET"
 	req.Close = true
 	req.URL, err = url.Parse(urls)
+	if err != nil {
+		panic(err)
+	}
 
 	header := http.Header{}
 	header.Set("User-Agent", UA)
 	req.Header = header
 	resp, err := http.DefaultClient.Do(&req)
 	if err == nil {
-		io.Copy(f, resp.Body)
+		if resp.StatusCode == 200 {
+			io.Copy(f, resp.Body)
+		} else {
+			f.WriteString("http get StatusCode" + strconv.Itoa(resp.StatusCode))
+		}
 		defer resp.Body.Close()
 	} else {
-		f.WriteString("111")
+		f.WriteString("http get error")
 	}
 
 	if n == 1161 {
 		c <- true
 	}
+
 }

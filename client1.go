@@ -29,12 +29,13 @@ func main() {
 	defer fh.Close()
 	inputread := bufio.NewReader(fh)
 
-	for i := 0; i < 1162; i++ {
-		input, _ := inputread.ReadString('\n')
-		go getShangTickerTables(c, i, strings.TrimSpace(input))
+	for i := 0; i < 290; i++ { //加入goroutine缓冲，4个执行完了再执行下面的4个。
+		for k := 0; k < 4; k++ {
+			input, _ := inputread.ReadString('\n')
+			go getShangTickerTables(c, i, strings.TrimSpace(input))
+		}
+		<-c
 	}
-
-	<-c
 
 	fmt.Println("main ok")
 }
@@ -71,7 +72,7 @@ func getShangTickerTables(c chan bool, n int, code string) {
 		f.WriteString("http get error")
 	}
 
-	if n == 1161 {
+	if n%4 == 0 {
 		c <- true
 	}
 

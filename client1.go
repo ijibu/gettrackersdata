@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -22,7 +23,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) //设置cpu的核的数量，从而实现高并发
 	logfile, _ := os.OpenFile("./test.log", os.O_RDWR|os.O_CREATE, 0)
 	logger := log.New(logfile, "\r\n", log.Ldate|log.Ltime|log.Llongfile)
-	c := make(chan int, 1920)
+	c := make(chan int, 1911)
 	fh, ferr := os.Open("./shen.ini")
 	if ferr != nil {
 		return
@@ -30,22 +31,25 @@ func main() {
 	defer fh.Close()
 	inputread := bufio.NewReader(fh)
 
-	for i := 0; i < 192; i++ { //加入goroutine缓冲，4个执行完了再执行下面的4个
-		for k := 0; k < 10; k++ {
-			input, _ := inputread.ReadString('\n')
-			go func(logger *log.Logger, logfile *os.File, i int, input string) {
-				getShangTickerTables(logger, logfile, i, input)
-				c <- 0
-			}(logger, logfile, i, strings.TrimSpace(input))
+	for i := 1; i <= 1911; i++ { //加入goroutine缓冲，4个执行完了再执行下面的4个
+		input, _ := inputread.ReadString('\n')
+		go func(logger *log.Logger, logfile *os.File, input string) {
+			getShangTickerTables(logger, logfile, input)
+			c <- 0
+		}(logger, logfile, strings.TrimSpace(input))
+
+		if i%10 == 0 {
+			time.Sleep(10 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
 		}
+
 	}
 	defer logfile.Close()
-	for j := 0; j < 1920; j++ {
+	for j := 0; j < 1911; j++ {
 		<-c
 	}
 }
 
-func getShangTickerTables(logger *log.Logger, logfile *os.File, n int, code string) {
+func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 	//并发写文件必须要有锁啊，怎么还是串行程序的思维啊。
 	fileName := "./data/sz/" + code + ".csv"
 	f, err := os.OpenFile(fileName, os.O_CREATE, 0666) //其实这里的 O_RDWR应该是 O_RDWR|O_CREATE，也就是文件不存在的情况下就建一个空文件，但是因为windows下还有BUG，如果使用这个O_CREATE，就会直接清空文件，所以这里就不用了这个标志，你自己事先建立好文件。
@@ -55,7 +59,7 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, n int, code stri
 
 	defer f.Close()
 
-	urls := "http://table.finance.yahoo.com/table.csv?s=" + code + ".ss"
+	urls := "http://table.finance.yahoo.com/table.csv?s=" + code + ".sz"
 	var req http.Request
 	req.Method = "GET"
 	req.Close = true
@@ -71,17 +75,15 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, n int, code stri
 	if err == nil {
 		if resp.StatusCode == 200 {
 			logger.Println(logfile, code+":sucess"+strconv.Itoa(resp.StatusCode))
-			fmt.Println(code + ":sucess" + strconv.Itoa(resp.StatusCode))
+			fmt.Println(code + ":sucess")
 			io.Copy(f, resp.Body)
 		} else {
 			logger.Println(logfile, code+":http get StatusCode"+strconv.Itoa(resp.StatusCode))
-			fmt.Println(code + ":http get StatusCode" + strconv.Itoa(resp.StatusCode))
-			f.WriteString("http get StatusCode" + strconv.Itoa(resp.StatusCode))
+			fmt.Println(code + ":" + strconv.Itoa(resp.StatusCode))
 		}
 		defer resp.Body.Close()
 	} else {
 		logger.Println(logfile, code+":http get error"+code)
-		fmt.Println(code + ":http get error" + code)
-		f.WriteString("http get error")
+		fmt.Println(code + ":error")
 	}
 }

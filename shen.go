@@ -80,6 +80,8 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 		} else {
 			logger.Println(logfile, code+":http get StatusCode"+strconv.Itoa(resp.StatusCode))
 			fmt.Println(code + ":" + strconv.Itoa(resp.StatusCode))
+			f.Close()
+			os.Rename(fileName, fileName+"_"+strconv.Itoa(resp.StatusCode))
 		}
 		defer resp.Body.Close()
 	} else {

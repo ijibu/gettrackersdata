@@ -2,13 +2,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -23,36 +23,30 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) //设置cpu的核的数量，从而实现高并发
 	logfile, _ := os.OpenFile("./test.log", os.O_RDWR|os.O_CREATE, 0)
 	logger := log.New(logfile, "\r\n", log.Ldate|log.Ltime|log.Llongfile)
-	path := "./data/erro"
-	c := make(chan int, 293)
-	i := 1
+	c := make(chan int, 1162)
+	fh, ferr := os.Open("./shang.ini")
+	if ferr != nil {
+		return
+	}
+	defer fh.Close()
+	inputread := bufio.NewReader(fh)
 
-	filepath.Walk(path, func(path string, f os.FileInfo, e error) error {
-		if f == nil {
-			return e
-		}
-		if f.IsDir() {
-			return nil
-		}
-		str := strings.Split(path, "\\")
-		input := strings.Replace(str[2], ".csv", "", -1)
-		//fmt.Println(input)
+	for i := 1; i <= 1162; i++ { //加入goroutine缓冲，4个执行完了再执行下面的4个
+		input, _ := inputread.ReadString('\n')
 		go func(logger *log.Logger, logfile *os.File, input string) {
 			getShangTickerTables(logger, logfile, input)
 			c <- 0
 		}(logger, logfile, strings.TrimSpace(input))
+
 		if i%10 == 0 {
 			time.Sleep(10 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
 		}
-		i++
-		return nil
-	})
 
+	}
 	defer logfile.Close()
-	for j := 0; j < 293; j++ {
+	for j := 0; j < 1162; j++ {
 		<-c
 	}
-	time.Sleep(100 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
 }
 
 func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
@@ -81,15 +75,15 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 	if err == nil {
 		if resp.StatusCode == 200 {
 			logger.Println(logfile, code+":sucess"+strconv.Itoa(resp.StatusCode))
-			fmt.Println(code + ":sucess" + strconv.Itoa(resp.StatusCode))
+			fmt.Println(code + ":sucess")
 			io.Copy(f, resp.Body)
 		} else {
 			logger.Println(logfile, code+":http get StatusCode"+strconv.Itoa(resp.StatusCode))
-			fmt.Println(code + ":http get StatusCode" + strconv.Itoa(resp.StatusCode))
+			fmt.Println(code + ":" + strconv.Itoa(resp.StatusCode))
 		}
 		defer resp.Body.Close()
 	} else {
 		logger.Println(logfile, code+":http get error"+code)
-		fmt.Println(code + ":http get error" + code)
+		fmt.Println(code + ":error")
 	}
 }

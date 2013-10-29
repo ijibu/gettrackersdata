@@ -14,3 +14,4 @@ cache/
 .settings/
 .buildpath
 *.log
+*.exe

@@ -23,8 +23,8 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) //设置cpu的核的数量，从而实现高并发
 	logfile, _ := os.OpenFile("./test.log", os.O_RDWR|os.O_CREATE, 0)
 	logger := log.New(logfile, "\r\n", log.Ldate|log.Ltime|log.Llongfile)
-	path := "./data/erro/sz"
-	c := make(chan int, 103)
+	path := "./data/erro/163"
+	c := make(chan int, 145)
 	i := 1
 
 	filepath.Walk(path, func(path string, f os.FileInfo, e error) error {
@@ -50,7 +50,7 @@ func main() {
 	})
 
 	defer logfile.Close()
-	for j := 0; j < 103; j++ {
+	for j := 0; j < 145; j++ {
 		<-c
 	}
 	time.Sleep(100 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
@@ -58,7 +58,7 @@ func main() {
 
 func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 	//并发写文件必须要有锁啊，怎么还是串行程序的思维啊。
-	fileName := "./data/sz/" + code + ".csv"
+	fileName := "./data/163/" + code + ".csv"
 	f, err := os.OpenFile(fileName, os.O_CREATE, 0666) //其实这里的 O_RDWR应该是 O_RDWR|O_CREATE，也就是文件不存在的情况下就建一个空文件，但是因为windows下还有BUG，如果使用这个O_CREATE，就会直接清空文件，所以这里就不用了这个标志，你自己事先建立好文件。
 	if err != nil {
 		panic(err)
@@ -66,7 +66,8 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 
 	defer f.Close()
 
-	urls := "http://table.finance.yahoo.com/table.csv?s=" + code + ".sz"
+	//urls := "http://table.finance.yahoo.com/table.csv?s=" + code + ".sz"
+	urls := "http://quotes.money.163.com/service/chddata.html?code=0" + code + "&start=19900530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
 	var req http.Request
 	req.Method = "GET"
 	req.Close = true

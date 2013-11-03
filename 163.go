@@ -21,17 +21,17 @@ const (
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) //设置cpu的核的数量，从而实现高并发
-	logfile, _ := os.OpenFile("./log/163_sz.log", os.O_RDWR|os.O_CREATE, 0)
+	logfile, _ := os.OpenFile("./log/163_sh.log", os.O_RDWR|os.O_CREATE, 0)
 	logger := log.New(logfile, "\r\n", log.Ldate|log.Ltime|log.Llongfile)
-	c := make(chan int, 1589)
-	fh, ferr := os.Open("./shenzhen_new.ini")
+	c := make(chan int, 941)
+	fh, ferr := os.Open("./shang_new.ini")
 	if ferr != nil {
 		return
 	}
 	defer fh.Close()
 	inputread := bufio.NewReader(fh)
 
-	for i := 1; i <= 1590; i++ { //加入goroutine缓冲，4个执行完了再执行下面的4个
+	for i := 1; i <= 942; i++ { //加入goroutine缓冲，4个执行完了再执行下面的4个
 		input, _ := inputread.ReadString('\n')
 		go func(logger *log.Logger, logfile *os.File, input string) {
 			getShangTickerTables(logger, logfile, input)
@@ -44,14 +44,14 @@ func main() {
 
 	}
 	defer logfile.Close()
-	for j := 0; j < 1589; j++ {
+	for j := 0; j < 941; j++ {
 		<-c
 	}
 }
 
 func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 	//并发写文件必须要有锁啊，怎么还是串行程序的思维啊。
-	fileName := "./data/163/sz/" + code + ".csv"
+	fileName := "./data/163/sh/" + code + ".csv"
 	f, err := os.OpenFile(fileName, os.O_CREATE, 0666) //其实这里的 O_RDWR应该是 O_RDWR|O_CREATE，也就是文件不存在的情况下就建一个空文件，但是因为windows下还有BUG，如果使用这个O_CREATE，就会直接清空文件，所以这里就不用了这个标志，你自己事先建立好文件。
 	if err != nil {
 		panic(err)
@@ -59,7 +59,7 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 
 	defer f.Close()
 
-	urls := "http://quotes.money.163.com/service/chddata.html?code=1" + code + "&start=19900530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
+	urls := "http://quotes.money.163.com/service/chddata.html?code=0" + code + "&start=19900530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
 	var req http.Request
 	req.Method = "GET"
 	req.Close = true

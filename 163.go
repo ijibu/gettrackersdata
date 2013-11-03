@@ -59,7 +59,7 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 
 	defer f.Close()
 
-	urls := "http://quotes.money.163.com/service/chddata.html?code=1" + code + "&start=19960530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
+	urls := "http://quotes.money.163.com/service/chddata.html?code=1" + code + "&start=19900530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
 	var req http.Request
 	req.Method = "GET"
 	req.Close = true

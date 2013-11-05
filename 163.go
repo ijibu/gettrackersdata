@@ -54,10 +54,10 @@ func main() {
 	runtime.GOMAXPROCS(cupNum) //设置cpu的核的数量，从而实现高并发
 	c := make(chan int, *num)
 	if *stockType == "sh" {
-		stockCodeFile = "./shang_new.ini"
+		stockCodeFile = "./ini/shang_new.ini"
 		stockPre = "0"
 	} else {
-		stockCodeFile = "./shen_new.ini"
+		stockCodeFile = "./ini/shen_new.ini"
 		stockPre = "1"
 	}
 

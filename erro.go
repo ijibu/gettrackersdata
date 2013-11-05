@@ -24,7 +24,7 @@ func main() {
 	logfile, _ := os.OpenFile("./test.log", os.O_RDWR|os.O_CREATE, 0)
 	logger := log.New(logfile, "\r\n", log.Ldate|log.Ltime|log.Llongfile)
 	path := "./data/erro/163"
-	c := make(chan int, 145)
+	c := make(chan int, 17)
 	i := 1
 
 	filepath.Walk(path, func(path string, f os.FileInfo, e error) error {
@@ -50,7 +50,7 @@ func main() {
 	})
 
 	defer logfile.Close()
-	for j := 0; j < 145; j++ {
+	for j := 0; j < 17; j++ {
 		<-c
 	}
 	time.Sleep(100 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
@@ -67,7 +67,7 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string) {
 	defer f.Close()
 
 	//urls := "http://table.finance.yahoo.com/table.csv?s=" + code + ".sz"
-	urls := "http://quotes.money.163.com/service/chddata.html?code=0" + code + "&start=19900530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
+	urls := "http://quotes.money.163.com/service/chddata.html?code=1" + code + "&start=19900530&end=20131103&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
 	var req http.Request
 	req.Method = "GET"
 	req.Close = true

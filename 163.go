@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -151,7 +151,13 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string, dow
 		if resp.StatusCode == 200 {
 			logger.Println(logfile, code+":sucess"+strconv.Itoa(resp.StatusCode))
 			fmt.Println(code + ":sucess")
-			io.Copy(f, resp.Body)
+			//io.Copy(f, resp.Body)
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Println("http read error")
+			}
+			src := string(body)
+			f.WriteString(src)
 		} else {
 			logger.Println(logfile, code+":http get StatusCode"+strconv.Itoa(resp.StatusCode))
 			fmt.Println(code + ":" + strconv.Itoa(resp.StatusCode))

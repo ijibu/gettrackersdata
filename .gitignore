@@ -3,7 +3,6 @@
 #################
 .project
 .metadata
-bin/
 tmp/
 data/
 cache/

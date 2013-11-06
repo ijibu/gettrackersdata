@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -128,7 +128,8 @@ func main() {
 
 func getShangTickerTables(logger *log.Logger, logfile *os.File, code string, downDir string, getUrl string, downFileExt string) {
 	fileName := downDir + code + downFileExt
-	f, err := os.OpenFile(fileName, os.O_CREATE, 0666) //其实这里的 O_RDWR应该是 O_RDWR|O_CREATE，也就是文件不存在的情况下就建一个空文件，但是因为windows下还有BUG，如果使用这个O_CREATE，就会直接清空文件，所以这里就不用了这个标志，你自己事先建立好文件。
+	//不加os.O_RDWR的话，在linux下面无法写入文件。
+	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0666) //其实这里的 O_RDWR应该是 O_RDWR|O_CREATE，也就是文件不存在的情况下就建一个空文件，但是因为windows下还有BUG，如果使用这个O_CREATE，就会直接清空文件，所以这里就不用了这个标志，你自己事先建立好文件。
 	if err != nil {
 		panic(err)
 	}
@@ -151,13 +152,10 @@ func getShangTickerTables(logger *log.Logger, logfile *os.File, code string, dow
 		if resp.StatusCode == 200 {
 			logger.Println(logfile, code+":sucess"+strconv.Itoa(resp.StatusCode))
 			fmt.Println(code + ":sucess")
-			//io.Copy(f, resp.Body)
-			body, err := ioutil.ReadAll(resp.Body)
+			_, err = io.Copy(f, resp.Body)
 			if err != nil {
-				log.Println("http read error")
+				panic(err)
 			}
-			src := string(body)
-			f.WriteString(src)
 		} else {
 			logger.Println(logfile, code+":http get StatusCode"+strconv.Itoa(resp.StatusCode))
 			fmt.Println(code + ":" + strconv.Itoa(resp.StatusCode))

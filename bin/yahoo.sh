@@ -1,7 +1,7 @@
 #!/bin/bash
 if test "$1" = ""; then
 	dateYear=`date +%Y`
-	dateMonth=`date +%Y`
+	dateMonth=`date +%m`
 	dateDay=`date +%d`
 	dateMonth=`expr  $dateMonth - 1`
 	dateDay=`expr  $dateDay - 1`
@@ -11,7 +11,7 @@ else
 fi
 if test "$2" = ""; then
 	dateYear1=`date +%Y`
-	dateMonth1=`date +%Y`
+	dateMonth1=`date +%m`
 	dateDay1=`date +%d`
 	dateMonth1=`expr  $dateMonth1 - 1`
 	dateDay1=`expr  $dateDay1 - 1`

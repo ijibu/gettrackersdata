@@ -9,7 +9,6 @@ import (
 	//"io"
 	"os"
 	"runtime"
-	"strings"
 	"time"
 )
 
@@ -87,7 +86,8 @@ func parseCsv(db *sql.DB, path string) {
 
 		dateTime, _ := time.Parse("2006-01-02", row[0])
 		intTime := dateTime.Unix()
-		stockCode := strings.Replace(row[1], "'", "", 0) //还存在编码问题，因为csv文件是ANSI格式的，还要转码才行。
+		//stockCode := strings.Replace(row[1], "'", "", 0) //还存在编码问题，因为csv文件是ANSI格式的，还要转码才行。
+		stockCode := row[1] //直接处理CSV文件，不用在程序里面进行替换了
 		_, err = stmtIns.Exec(stockCode, intTime, row[6], row[4], row[5], row[3], row[7], row[11])
 		if err != nil {
 			panic(err.Error()) // proper error handling instead of panic in your app

@@ -42,14 +42,6 @@ func main() {
 		return
 	}
 
-	urlsConfig := map[string]string{}
-	//成交明细
-	urlsConfig["cjmx"] = "http://quotes.money.163.com/cjmx/2013/?/??.xls"
-	//每日收盘情况
-	urlsConfig["chddata"] = "http://quotes.money.163.com/service/chddata.html?code=??&start=?&end=?&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
-	//历史资金流向
-	urlsConfig["lszjlx"] = "http://quotes.money.163.com/trade/lszjlx_?,?.html"
-
 	cupNum := runtime.NumCPU()
 	runtime.GOMAXPROCS(cupNum) //设置cpu的核的数量，从而实现高并发
 	c := make(chan int, *num)

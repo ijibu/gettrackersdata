@@ -55,16 +55,16 @@ func main() {
 
 	//日志文件目录，文件下载地址，下载后保存的文件类型
 	if *dataType == "cjmx" {
-		logFileDir = "./log/163/cjmx/" + *stockType + "/"
-		downDir = "./data/163/cjmx/" + *stockType + "/" + *startDate + "/"
+		logFileDir = "./log/163/" + *startDate + "/cjmx/" + *stockType + "/"
+		downDir = "./data/163/" + *startDate + "/cjmx/" + *stockType + "/"
 		downFileExt = ".xls"
 	} else if *dataType == "chddata" {
-		logFileDir = "./log/163/chddata/" + *stockType + "/"
-		downDir = "./data/163/chddata/" + *stockType + "/" + *startDate + "/"
+		logFileDir = "./log/163/" + *startDate + "/chddata/" + *stockType + "/"
+		downDir = "./data/163/" + *startDate + "/chddata/" + *stockType + "/"
 		downFileExt = ".csv"
 	} else if *dataType == "lszjlx" {
-		logFileDir = "./log/163/lszjlx/" + *stockType + "/"
-		downDir = "./data/163/lszjlx/" + *stockType + "/" + *startDate + "/"
+		logFileDir = "./log/163/" + *startDate + "/lszjlx/" + *stockType + "/"
+		downDir = "./data/163/" + *startDate + "/lszjlx/" + *stockType + "/"
 		downFileExt = ".html"
 	}
 	if !isDirExists(logFileDir) { //目录不存在，则进行创建。

@@ -104,7 +104,9 @@ func main() {
 	})
 
 	sort.Sort(ByCosine(retData))
-	fmt.Println(retData)
+	for i := 0; i < len(retData); i++ {
+		fmt.Println(retData[i])
+	}
 }
 
 func getRateFromCsv(path string) (stockCode int, stockRate []float64) {

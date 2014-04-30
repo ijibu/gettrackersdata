@@ -15,7 +15,7 @@ import (
 //保证对比的向量必须有最小的维度，否则相似性计算出来不准确
 const minRateLen int = 2500
 
-var stockCode *int = flag.Int("n", 600000, "please input a stockCode like 600000")
+var stockCode *int = flag.Int("n", 600633, "please input a stockCode like 600000")
 
 func CosDist(rate1 []float64, rate2 []float64) float64 {
 	//if len(rate1) != len(rate2) {
@@ -62,7 +62,7 @@ func main() {
 		return
 	}
 
-	fileName := "./data/163/chddata/sh/20131104/" + strconv.Itoa(*stockCode) + ".csv"
+	fileName := "./data/163/chddata/sh/20131101/" + strconv.Itoa(*stockCode) + ".csv"
 	_, rate1 = getRateFromCsv(fileName)
 
 	filepath.Walk(path, func(path string, f os.FileInfo, e error) error {

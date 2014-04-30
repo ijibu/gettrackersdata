@@ -9,6 +9,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 )
 
@@ -16,6 +17,23 @@ import (
 const minRateLen int = 2500
 
 var stockCode *int = flag.Int("n", 600633, "please input a stockCode like 600000")
+
+type stockDist struct {
+	code1, code2 int
+	cosine       float64
+}
+
+func (p stockDist) String() string {
+	return fmt.Sprintf("%d,%d,%g", p.code1, p.code2, p.cosine)
+}
+
+// ByCosine implements sort.Interface for []stockDist based on
+// the cosine field.
+type ByCosine []stockDist
+
+func (a ByCosine) Len() int           { return len(a) }
+func (a ByCosine) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByCosine) Less(i, j int) bool { return a[i].cosine > a[j].cosine }
 
 func CosDist(rate1 []float64, rate2 []float64) float64 {
 	//if len(rate1) != len(rate2) {
@@ -50,9 +68,10 @@ func CosDist(rate1 []float64, rate2 []float64) float64 {
 func main() {
 	var (
 		rate1, rate2 []float64
-		stock        string
+		stock        int
 		path         string = "./data/163/chddata/sh/20131101"
 		cosine       float64
+		retData      ByCosine
 	)
 
 	flag.Parse()
@@ -74,17 +93,21 @@ func main() {
 		}
 		stock, rate2 = getRateFromCsv(path)
 		cosine = CosDist(rate1, rate2)
-		fmt.Print(*stockCode)
-		fmt.Print(":")
-		fmt.Print(stock)
-		fmt.Print(": ")
-		fmt.Println(cosine)
+		//fmt.Print(*stockCode)
+		//fmt.Print(":")
+		//fmt.Print(stock)
+		//fmt.Print(": ")
+		//fmt.Println(cosine)
+		retData = append(retData, stockDist{*stockCode, stock, cosine})
 
 		return nil
 	})
+
+	sort.Sort(ByCosine(retData))
+	fmt.Println(retData)
 }
 
-func getRateFromCsv(path string) (stockCode string, stockRate []float64) {
+func getRateFromCsv(path string) (stockCode int, stockRate []float64) {
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -99,7 +122,7 @@ func getRateFromCsv(path string) (stockCode string, stockRate []float64) {
 	sz := len(ss)
 	for i := 1; i < sz; i++ {
 		row := ss[i]
-		stockCode = row[1] //直接处理CSV文件，不用在程序里面进行替换了
+		stockCode, _ = strconv.Atoi(row[1][1:]) //直接处理CSV文件，不用在程序里面进行替换了
 		price, _ := strconv.ParseFloat(row[3], 64)
 		stockRate = append(stockRate, price)
 	}

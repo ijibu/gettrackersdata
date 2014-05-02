@@ -1,5 +1,11 @@
 //利用余弦相似性计算股票的K线相似性
 //package CosineSimilarity
+/*
+	使用说明：
+	go build getSimilarStock.go
+	./getSimilarStock -n=[股票代码] > 文件名(输出结果到那个文件)
+*/
+
 package main
 
 import (
@@ -93,11 +99,6 @@ func main() {
 		}
 		stock, rate2 = getRateFromCsv(path)
 		cosine = CosDist(rate1, rate2)
-		//fmt.Print(*stockCode)
-		//fmt.Print(":")
-		//fmt.Print(stock)
-		//fmt.Print(": ")
-		//fmt.Println(cosine)
 		retData = append(retData, stockDist{*stockCode, stock, cosine})
 
 		return nil
@@ -109,6 +110,7 @@ func main() {
 	}
 }
 
+//从csv文件中读取数据，组成向量
 func getRateFromCsv(path string) (stockCode int, stockRate []float64) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -134,7 +136,7 @@ func getRateFromCsv(path string) (stockCode int, stockRate []float64) {
 
 func show_usage() {
 	fmt.Fprintf(os.Stderr,
-		"Usage: %s [-d=<date>] [-n=<num>] [-s=<stockType>] [-t=<type>]\n"+
+		"Usage: %s  [-n=<num>]\n"+
 			"       <command> [<args>]\n\n",
 		os.Args[0])
 	fmt.Fprintf(os.Stderr,

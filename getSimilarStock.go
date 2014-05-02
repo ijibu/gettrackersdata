@@ -22,7 +22,7 @@ import (
 //保证对比的向量必须有最小的维度，否则相似性计算出来不准确
 const minRateLen int = 2500
 
-var stockCode *int = flag.Int("n", 600633, "please input a stockCode like 600000")
+var stockCode *int = flag.Int("n", 0, "please input a stockCode like 600000")
 
 type stockDist struct {
 	code1, code2 int
@@ -71,24 +71,25 @@ func CosDist(rate1 []float64, rate2 []float64) float64 {
 	return sum_xy / math.Sqrt(sum_x*sum_y)
 }
 
+type rateArr []float64
+
 func main() {
 	var (
-		rate1, rate2 []float64
-		stock        int
-		path         string = "./data/163/chddata/sh/20131101"
-		cosine       float64
-		retData      ByCosine
+		rate    map[int]rateArr = make(map[int]rateArr, 943)
+		rate1   []float64
+		stock   int
+		path    string = "./data/163/chddata/sh/20131101"
+		cosine  float64
+		retData ByCosine
 	)
 
 	flag.Parse()
 
-	if *stockCode == 0 {
-		show_usage()
-		return
+	if *stockCode != 0 { //获取某只股票的相似性
+		fileName := "./data/163/chddata/sh/20131101/" + strconv.Itoa(*stockCode) + ".csv"
+		_, rate2 := getRateFromCsv(fileName)
+		rate[*stockCode] = rate2
 	}
-
-	fileName := "./data/163/chddata/sh/20131101/" + strconv.Itoa(*stockCode) + ".csv"
-	_, rate1 = getRateFromCsv(fileName)
 
 	filepath.Walk(path, func(path string, f os.FileInfo, e error) error {
 		if f == nil {
@@ -97,12 +98,26 @@ func main() {
 		if f.IsDir() {
 			return nil
 		}
-		stock, rate2 = getRateFromCsv(path)
-		cosine = CosDist(rate1, rate2)
-		retData = append(retData, stockDist{*stockCode, stock, cosine})
-
+		stock, rate1 = getRateFromCsv(path)
+		rate[stock] = rate1
 		return nil
 	})
+
+	for code, rateItem := range rate {
+		if *stockCode != 0 {
+			if code != *stockCode {
+				cosine = CosDist(rate[*stockCode], rateItem)
+				retData = append(retData, stockDist{*stockCode, code, cosine})
+			}
+		} else {
+			for code1, rateItem1 := range rate {
+				if code1 != code {
+					cosine = CosDist(rateItem, rateItem1)
+					retData = append(retData, stockDist{code, code1, cosine})
+				}
+			}
+		}
+	}
 
 	sort.Sort(ByCosine(retData))
 	for i := 0; i < len(retData); i++ {

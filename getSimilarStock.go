@@ -103,6 +103,8 @@ func main() {
 		return nil
 	})
 
+	//此算法还有一个bug，比如计算股票A和股票B的相似性计算了两次。实际上该处需要的是一种组合，而不是排列。
+	//所以采用组合算法可以满足需求。
 	for code, rateItem := range rate {
 		if *stockCode != 0 {
 			if code != *stockCode {
@@ -121,6 +123,9 @@ func main() {
 
 	sort.Sort(ByCosine(retData))
 	for i := 0; i < len(retData); i++ {
+		if i%2 == 0 || retData[i].cosine == 0 {
+			continue
+		}
 		fmt.Println(retData[i])
 	}
 }

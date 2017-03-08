@@ -13,7 +13,7 @@ type TestMysql struct {
 /* 初始化数据库引擎 */
 func Init() (*TestMysql, error) {
 	test := new(TestMysql)
-	db, err := sql.Open("mysql", "test:test@tcp(127.0.0.1:3306)/abwork?charset=utf8")
+	db, err := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/soft_logs?charset=utf8")
 	//第一个参数 ： 数据库引擎
 	//第二个参数 : 数据库DSN配置。Go中没有统一DSN,都是数据库引擎自己定义的，因此不同引擎可能配置不同
 	//本次演示采用http://code.google.com/p/go-mysql-driver
@@ -128,13 +128,36 @@ func (test *TestMysql) Close() {
 	}
 }
 
+func (test *TestMysql) aa() (gameIds []int) {
+	rows, err := test.db.Query("select game_id FROM netbar_game_log_20151123 where netbar_id=579 limit 10")
+	if err != nil {
+		panic(err.Error())
+		return
+	}
+	defer rows.Close()
+
+	var gameId int
+
+	for rows.Next() {
+		if err := rows.Scan(&gameId); err == nil {
+			fmt.Println("aa")
+			gameIds = append(gameIds, gameId)
+		} else {
+			panic(err)
+		}
+	}
+	fmt.Println("bbb")
+	return
+}
+
 func main() {
 	if test, err := Init(); err == nil {
-		test.Create()
-		test.Update()
-		test.Read()
-		test.Delete()
-		test.Read()
-		test.Close()
+		//		test.Create()
+		//		test.Update()
+		//		test.Read()
+		//		test.Delete()
+		//		test.Read()
+		//		test.Close()
+		test.aa()
 	}
 }

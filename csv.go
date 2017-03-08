@@ -5,14 +5,16 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-var num *int = flag.Int("n", 0, "please input a num like 1024")
+var num *int = flag.Int("n", 1, "please input a num like 1024")
 var stockType *string = flag.String("s", "sh", "please input a stockType like sh")
 var dataType *string = flag.String("t", "chddata", "please input a dataType like chddata")
 
@@ -52,7 +54,7 @@ func main() {
 	if *dataType == "cjmx" {
 		path = "./data/163/chddata/" + *stockType + "/20131101"
 	} else if *dataType == "chddata" {
-		path = "./data/163/chddata/" + *stockType + "/20131101"
+		path = "./data/163/20170307/chddata/" + *stockType + ""
 	} else if *dataType == "lszjlx" {
 		path = "./data/163/lszjlx/" + *stockType + "/csv"
 	}
@@ -102,6 +104,9 @@ func parseCsv(db *sql.DB, path string) {
 	sz := len(ss)
 	for i := 1; i < sz; i++ {
 		row := ss[i]
+		fmt.Println(row)
+		continue
+
 		stmtIns, err := db.Prepare("INSERT INTO 163_transaction_log(stockCode, dateTime, openPrice, highPrice, lowPrice, closePrice, adjClosePrice, volume) VALUES (?, ?, ?, ?, ?, ?, ?, ?)") // ? = placeholder
 		if err != nil {
 			panic(err.Error()) // proper error handling instead of panic in your app
@@ -111,7 +116,9 @@ func parseCsv(db *sql.DB, path string) {
 		dateTime, _ := time.Parse("2006-01-02", row[0])
 		intTime := dateTime.Unix()
 		stockCode := row[1] //直接处理CSV文件，不用在程序里面进行替换了
-		_, err = stmtIns.Exec(stockCode, intTime, row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
+		stockCode = strings.Replace(stockCode, "'", "", -1)
+
+		_, err = stmtIns.Exec(stockCode, intTime, row[6], row[4], row[5], row[3], row[8], row[11])
 		if err != nil {
 			panic(err.Error()) // proper error handling instead of panic in your app
 		}

@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -42,9 +41,6 @@ func main() {
 		return
 	}
 
-	cupNum := runtime.NumCPU()
-	runtime.GOMAXPROCS(cupNum) //设置cpu的核的数量，从而实现高并发
-	c := make(chan int, *num)
 	if *stockType == "sh" {
 		stockCodeFile = "./ini/shang_new.ini"
 		stockPre = "0"
@@ -95,27 +91,22 @@ func main() {
 		code := strings.TrimSpace(input)
 
 		if *dataType == "cjmx" {
-			getUrl = "http://quotes.money.163.com/cjmx/2013/" + *startDate + "/" + stockPre + code + ".xls"
+			getUrl = "http://quotes.money.163.com/cjmx/2015/" + *startDate + "/" + stockPre + code + ".xls"
 		} else if *dataType == "chddata" {
-			getUrl = "http://quotes.money.163.com/service/chddata.html?code=" + stockPre + code + "&start=" + *startDate + "&end=" + *startDate + "&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
+			//getUrl = "http://quotes.money.163.com/service/chddata.html?code=" + stockPre + code + "&start=" + *startDate + "&end=" + *startDate + "&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
+			getUrl = "http://quotes.money.163.com/service/chddata.html?code=" + stockPre + code + "&start=19900101&end=" + *startDate + "&fields=TCLOSE;HIGH;LOW;TOPEN;LCLOSE;CHG;PCHG;TURNOVER;VOTURNOVER;VATURNOVER;TCAP;MCAP"
 		} else if *dataType == "lszjlx" {
 			getUrl = "http://quotes.money.163.com/trade/lszjlx_" + code + ",0.html"
 		}
 
-		go func(logger *log.Logger, logfile *os.File, code string, downDir string, getUrl string, downFileExt string) {
-			getShangTickerTables(logger, logfile, code, downDir, getUrl, downFileExt)
-			c <- 0
-		}(logger, logfile, code, downDir, getUrl, downFileExt)
+		getShangTickerTables(logger, logfile, code, downDir, getUrl, downFileExt)
 
-		if i%4 == 0 { //并发默认为4
-			time.Sleep(4 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
+		if i%5 == 0 { //执行4次休息2秒
+			time.Sleep(2 * time.Second) //加入执行缓冲，否则同时发起大量的tcp连接，操作系统会直接返回错误。
 		}
 
 	}
 	defer logfile.Close()
-	for j := 0; j < *num; j++ {
-		<-c
-	}
 }
 
 func getShangTickerTables(logger *log.Logger, logfile *os.File, code string, downDir string, getUrl string, downFileExt string) {
